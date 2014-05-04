@@ -1,112 +1,175 @@
-function signDigest(text)
-{
-if(window.event)
-window.event.cancelBubble = true;
- 
-var dest = sign(text); //TODO
-alert(dest);
-return dest;
+// Code goes here
+
+$(function(){
+
+var body = $('body'),
+stage = $('#stage'),
+back = $('a.back');
+
+/* Step 1 */
+
+$('#step1 .encrypt').click(function(){
+body.attr('class', 'encrypt');
+
+// Go to step 2
+step(2);
+});
+
+$('#step1 .decrypt').click(function(){
+body.attr('class', 'decrypt');
+step(2);
+});
+
+
+/* Step 2 */
+
+
+$('#step2 .button').click(function(){
+// Trigger the file browser dialog
+$(this).parent().find('input').click();
+});
+
+
+// Set up events for the file inputs
+
+var file = null;
+
+$('#step2').on('change', '#encrypt-input', function(e){
+
+// Has a file been selected?
+
+if(e.target.files.length!=1){
+alert('Please select a file to encrypt!');
+return false;
 }
- 
-// CAPICOM constants
-var CAPICOM_STORE_OPEN_READ_ONLY = 0;
-var CAPICOM_CURRENT_USER_STORE = 2;
-var CAPICOM_CERTIFICATE_FIND_SHA1_HASH = 0;
-var CAPICOM_CERTIFICATE_FIND_EXTENDED_PROPERTY = 6;
-var CAPICOM_CERTIFICATE_FIND_TIME_VALID = 9;
-var CAPICOM_CERTIFICATE_FIND_KEY_USAGE = 12;
-var CAPICOM_DIGITAL_SIGNATURE_KEY_USAGE = 0x00000080;
-var CAPICOM_AUTHENTICATED_ATTRIBUTE_SIGNING_TIME = 0;
-var CAPICOM_INFO_SUBJECT_SIMPLE_NAME = 0;
-var CAPICOM_ENCODE_BASE64 = 0;
-var CAPICOM_E_CANCELLED = -2138568446;
-var CERT_KEY_SPEC_PROP_ID = 6;
- 
-function IsCAPICOMInstalled()
-{
-if(typeof(oCAPICOM) == "object")
-{
-if( (oCAPICOM.object !== null) )
-{
-// We found CAPICOM!
-return true;
+
+file = e.target.files[0];
+
+if(file.size > 1024*1024){
+alert('Please choose files smaller than 1mb, otherwise you may crash your browser. \nThis is a known issue. See the tutorial.');
+return;
 }
+
+step(3);
+});
+
+$('#step2').on('change', '#decrypt-input', function(e){
+
+if(e.target.files.length!=1){
+alert('Please select a file to decrypt!');
+return false;
 }
+
+file = e.target.files[0];
+step(3);
+});
+
+
+/* Step 3 */
+
+
+$('a.button.process').click(function(){
+
+var input = $(this).parent().find('input[type=password]'),
+a = $('#step4 a.download'),
+password = input.val();
+
+input.val('');
+
+if(password.length<5){
+alert('Please choose a longer password!');
+return;
 }
- 
-function FindCertificateByHash()
-{
- 
-try
-{
-// instantiate the CAPICOM objects
-var MyStore = new ActiveXObject("CAPICOM.Store");
-// open the current users personal certificate store
-MyStore.Open(CAPICOM_CURRENT_USER_STORE, "My", CAPICOM_STORE_OPEN_READ_ONLY);
- 
-// find all of the certificates that have the specified hash
-var FilteredCertificates = MyStore.Certificates.Find(CAPICOM_CERTIFICATE_FIND_SHA1_HASH, strUserCertigicateThumbprint);
- 
-var Signer = new ActiveXObject("CAPICOM.Signer");
-Signer.Certificate = FilteredCertificates.Item(1);
-return Signer;
- 
-// Clean Up
-MyStore = null;
-FilteredCertificates = null;
+
+// The HTML5 FileReader object will allow us to read the
+// contents of the selected file.
+
+var reader = new FileReader();
+
+if(body.hasClass('encrypt')){
+
+// Encrypt the file!
+
+reader.onload = function(e){
+
+// Use the CryptoJS library and the AES cypher to encrypt the
+// contents of the file, held in e.target.result, with the password
+
+var encrypted = CryptoJS.AES.encrypt(e.target.result, password);
+
+// The download attribute will cause the contents of the href
+// attribute to be downloaded when clicked. The download attribute
+// also holds the name of the file that is offered for download.
+
+a.attr('href', 'data:application/octet-stream,' + encrypted);
+a.attr('download', file.name + '.encrypted');
+
+step(4);
+};
+
+// This will encode the contents of the file into a data-uri.
+// It will trigger the onload handler above, with the result
+
+reader.readAsDataURL(file);
 }
-catch (e)
-{
-if (e.number != CAPICOM_E_CANCELLED)
-{
-return new ActiveXObject("CAPICOM.Signer");
+else {
+
+// Decrypt it!
+
+reader.onload = function(e){
+
+var decrypted = CryptoJS.AES.decrypt(e.target.result, password)
+.toString(CryptoJS.enc.Latin1);
+
+if(!/^data:/.test(decrypted)){
+alert("Invalid pass phrase or file! Please try again.");
+return false;
 }
+
+a.attr('href', decrypted);
+a.attr('download', file.name.replace('.encrypted',''));
+
+step(4);
+};
+
+reader.readAsText(file);
 }
+});
+
+
+/* The back button */
+
+
+back.click(function(){
+
+// Reinitialize the hidden file inputs,
+// so that they don't hold the selection
+// from last time
+
+$('#step2 input[type=file]').replaceWith(function(){
+return $(this).clone();
+});
+
+step(1);
+});
+
+
+// Helper function that moves the viewport to the correct step div
+
+function step(i){
+
+if(i == 1){
+back.fadeOut();
 }
- 
-function sign(src)
-{
-if(window.crypto &amp;amp;&amp;amp; window.crypto.signText)
-return sign_NS(src);
- 
-return sign_IE(src);
+else{
+back.fadeIn();
 }
- 
-function sign_NS(src)
-{
-var s = crypto.signText(src, "ask" );
-return s;
+
+// Move the #stage div. Changing the top property will trigger
+// a css transition on the element. i-1 because we want the
+// steps to start from 1:
+
+stage.css('top',(-(i-1)*100)+'%');
 }
- 
-function sign_IE(src)
-{
-try
-{
-// instantiate the CAPICOM objects
-var SignedData = new ActiveXObject("CAPICOM.SignedData");
-var TimeAttribute = new ActiveXObject("CAPICOM.Attribute");
- 
-// Set the data that we want to sign
-SignedData.Content = src;
-var Signer = FindCertificateByHash();
- 
-// Set the time in which we are applying the signature
-var Today = new Date();
-TimeAttribute.Name = CAPICOM_AUTHENTICATED_ATTRIBUTE_SIGNING_TIME;
-TimeAttribute.Value = Today.getVarDate();
-Today = null;
-Signer.AuthenticatedAttributes.Add(TimeAttribute);
- 
-// Do the Sign operation
-var szSignature = SignedData.Sign(Signer, true, CAPICOM_ENCODE_BASE64);
-return szSignature;
-}
-catch (e)
-{
-if (e.number != CAPICOM_E_CANCELLED)
-{
-alert("An error occurred when attempting to sign the content, the errot was: " + e.description);
-}
-}
-return "";
-}
+
+})
