@@ -1,194 +1,228 @@
 <!DOCTYPE html>
 <html>
 
-  <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="jsrsasign : The 'jsrsasign' (RSA-Sign JavaScript Library) is a open source free pure JavaScript implementation of PKCS#1 v2.1 RSASSA-PKCS1-v1_5 RSA signing and validation algorithm." />
+    <head>
+        <meta charset='utf-8' />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+        <meta name="description" content="jsrsasign : The 'jsrsasign' (RSA-Sign JavaScript Library) is a open source free pure JavaScript implementation of PKCS#1 v2.1 RSASSA-PKCS1-v1_5 RSA signing and validation algorithm." />
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-    <title>ECDSA sample</title>
-<!-- for pkcs5pkey -->
-<script type="text/javascript" src="core.js"></script>
-<script type="text/javascript" src="cipher-core.js"></script>
-<script type="text/javascript" src="md5.js"></script>
-<script type="text/javascript" src="tripledes.js"></script>
-<script type="text/javascript" src="enc-base64.js"></script>
-<!-- for crypto -->
-<script type="text/javascript" src="sha1.js"></script>
-<script type="text/javascript" src="sha256.js"></script>
-<!-- for crypto, asn1, asn1x509 -->
-<script type="text/javascript" src="yahoo-min.js"></script>
-<!-- for asn1x509(stohex) -->
-<script type="text/javascript" src="base64x-1.1.min.js"></script>
+        <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+        <title>Assinaturation</title>
+        <script type="text/javascript" src="core.js"></script>
+        <script type="text/javascript" src="cipher-core.js"></script>
+        <script type="text/javascript" src="md5.js"></script>
+        <script type="text/javascript" src="tripledes.js"></script>
+        <script type="text/javascript" src="enc-base64.js"></script>
+        <script type="text/javascript" src="sha1.js"></script>
+        <script type="text/javascript" src="sha256.js"></script>
+        <script type="text/javascript" src="yahoo-min.js"></script>
+        <script type="text/javascript" src="base64x-1.1.min.js"></script>
+        <script type="text/javascript" src="jsbn.js"></script>
+        <script type="text/javascript" src="jsbn2.js"></script>
+        <script type="text/javascript" src="prng4.js"></script>
+        <script type="text/javascript" src="rng.js"></script>
+        <script type="text/javascript" src="rsa.js"></script>
+        <script type="text/javascript" src="rsa2.js"></script>
+        <script type="text/javascript" src="base64.js"></script>
+        <script type="text/javascript" src="asn1hex-1.1.js"></script>
+        <script type="text/javascript" src="rsapem-1.1.js"></script>
+        <script type="text/javascript" src="rsasign-1.2.js"></script>
+        <script type="text/javascript" src="x509-1.1.js"></script>
+        <script type="text/javascript" src="pkcs5pkey-1.0.js"></script>
+        <script type="text/javascript" src="asn1-1.0.js"></script>
+        <script type="text/javascript" src="asn1x509-1.0.js"></script>
+        <script type="text/javascript" src="crypto-1.1.js"></script>
+        <script type="text/javascript" src="ec.js"></script>
+        <script type="text/javascript" src="ec-patch.js"></script>
+        <script type="text/javascript" src="ecdsa-modified-1.0.js"></script>
+        <script type="text/javascript" src="ecparam-1.0.js"></script>
+        <script type="text/javascript"></script>
+    </head>
 
-<script type="text/javascript" src="jsbn.js"></script>
-<script type="text/javascript" src="jsbn2.js"></script>
-<script type="text/javascript" src="prng4.js"></script>
-<script type="text/javascript" src="rng.js"></script>
-<script type="text/javascript" src="rsa.js"></script>
-<script type="text/javascript" src="rsa2.js"></script>
-<script type="text/javascript" src="base64.js"></script>
-<script type="text/javascript" src="asn1hex-1.1.js"></script>
-<script type="text/javascript" src="rsapem-1.1.js"></script>
-<script type="text/javascript" src="rsasign-1.2.js"></script>
-<script type="text/javascript" src="x509-1.1.js"></script>
-<script type="text/javascript" src="pkcs5pkey-1.0.js"></script>
-<script type="text/javascript" src="asn1-1.0.js"></script>
-<script type="text/javascript" src="asn1x509-1.0.js"></script>
-<script type="text/javascript" src="crypto-1.1.js"></script>
+    <script>
 
-<script type="text/javascript" src="ec.js"></script>
-<script type="text/javascript" src="ec-patch.js"></script>
-<script type="text/javascript" src="ecdsa-modified-1.0.js"></script>
-<script type="text/javascript" src="ecparam-1.0.js"></script>
-<script type="text/javascript">
-function doGenerate() {
-  var f1 = document.form1;
-  var curve = f1.curve1.value;
-  var ec = new KJUR.crypto.ECDSA({"curve": curve});
-  var keypair = ec.generateKeyPairHex();
-
-  f1.prvkey1.value = keypair.ecprvhex;
-  f1.pubkey1.value = keypair.ecpubhex;
-}
-
-function doSign() {
-    var f1 = document.form1;
-  var prvkey = f1.prvkey1.value;
-  var curve = f1.curve1.value;
-  var sigalg = f1.sigalg1.value;
-  var saida = f1.saida.value;
-
-  var sig = new KJUR.crypto.Signature({"alg": sigalg, "prov": "cryptojs/jsrsa"});
-  sig.initSign({'ecprvhex': prvkey, 'eccurvename': curve});
-  sig.updateString(saida);
-  var sigValueHex = sig.sign();
-  
-  f1.sigval1.value = sigValueHex;
-    
-    function ba2hex(Int8Array){
-    	
-    	var tam = Int8Array.length;
-        var saida = "";
-        
-        for(var i=0; i<tam; i++){
-        saida += Int8Array[i].toString(16);
-      }
-    	return saida;
-    }
-
-    function ab2str(buf) {
-       return String.fromCharCode.apply(null, new Int8Array(buf));
-     }
- 
-function file2ab(file) {
-          
-    var reader = new FileReader();    
-    reader.readAsArrayBuffer(file);   
-    reader.onload = function(e) {
-        var buffer = reader.result;           
-        var view = new DataView(buffer);    
-        var magic = view.getUint8(0, false); 
-        var numint = new Int8Array(buffer);
-        
-        return numint;
-
-    };
-}
+        var _chavePublica = null;
+        var _chavePrivada = null;
+        var _algoritmoAssina = null;
+        var _lencurve = 1024;
+        var _curva = null;
+        var _strHex = null;
 
 
-function file2hex(file) {
-           
-    var reader = new FileReader();     
-    reader.readAsArrayBuffer(file);   
-    reader.onload = function(e) {
-        var buffer = reader.result;           
-        var view = new DataView(buffer);      
-        var magic = view.getUint8(0, false); 
-        var numint = new Int8Array(buffer);
-        
-        var tam = numint.length;
-        var saida = "";
-        
-        for(var i=0; i<tam; i++){
-        saida += numint[i].toString(16);
-      }
-      document.getElementById("arqab").value = saida;
-      
+        var _certificate = "-----BEGIN CERTIFICATE-----" +
+                +"MIIBvTCCASYCCQD55fNzc0WF7TANBgkqhkiG9w0BAQUFADAjMQswCQYDVQQGEwJK" +
+                +"UDEUMBIGA1UEChMLMDAtVEVTVC1SU0EwHhcNMTAwNTI4MDIwODUxWhcNMjAwNTI1" +
+                +"MDIwODUxWjAjMQswCQYDVQQGEwJKUDEUMBIGA1UEChMLMDAtVEVTVC1SU0EwgZ8w" +
+                +"DQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBANGEYXtfgDRlWUSDn3haY4NVVQiKI9Cz" +
+                +"Thoua9+DxJuiseyzmBBe7Roh1RPqdvmtOHmEPbJ+kXZYhbozzPRbFGHCJyBfCLzQ" +
+                +"fVos9/qUQ88u83b0SFA2MGmQWQAlRtLy66EkR4rDRwTj2DzR4EEXgEKpIvo8VBs/" +
+                +"3+sHLF3ESgAhAgMBAAEwDQYJKoZIhvcNAQEFBQADgYEAEZ6mXFFq3AzfaqWHmCy1" +
+                +"ARjlauYAa8ZmUFnLm0emg9dkVBJ63aEqARhtok6bDQDzSJxiLpCEF6G4b/Nv/M/M" +
+                +"LyhP+OoOTmETMegAVQMq71choVJyOFE5BtQa6M/lCHEOya5QUfoRF2HF9EjRF44K" +
+                +"3OK+u3ivTSj3zwjtpudY5Xo=" +
+                +"-----END CERTIFICATE-----";
 
-    };
-}
-  
-}
+        function gerador() {
 
-function doVerify() {
-  var f1 = document.form1;
-  var pubkey = f1.pubkey1.value;
-  var curve = f1.curve1.value;
-  var sigalg = f1.sigalg1.value;
-  var msg1 = f1.msg1.value;
-  var sigval = f1.sigval1.value;
 
-  var sig = new KJUR.crypto.Signature({"alg": sigalg, "prov": "cryptojs/jsrsa"});
-  sig.initVerifyByPublicKey({'ecpubhex': pubkey, 'eccurvename': curve});
-  sig.updateString(msg1);
-  var result = sig.verify(sigval);
-  if (result) {
-    alert("valid ECDSA signature");
-  } else {
-    alert("invalid ECDSA signature");
-  }
-}
-</script>
-  </head>
+            var ec = KJUR.crypto.ECDSA({'curve': 'secp256r1'});
+            var ec = new KJUR.crypto.ECDSA({"curve": ec});
+            var parChaves = ec.generateKeyPairHex();
 
-  <body>
+            _chavePublica = parChaves.ecpubhex;
+            _chavePrivada = parChaves.ecprvhex;
+            _algoritmoAssina = document.getElementById("algoritmoAssina").value;
+            _curva = document.getElementById("valorCurva").value;
+            document.getElementById("chavePublica").value = _chavePublica;
+        }
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
+        function assinador() {
 
-<!-- now editing -->
-<form name="form1">
-<h4>Primeiro Passo: Escolha um EC e gere seu par de chaves!</h4>
-ECC curve name: 
-<select name="curve1">
-<option value="secp256r1">secp256r1 (= NIST P-256, P-256, prime256v1)
-<option value="secp256k1">secp256k1
-<option value="secp384r1">secp384r1 (= NIST P-384, P-384)
-</select><br/>
-<input type="button" value="Gerar par de chaves EC " onClick="doGenerate();"/><br/>
-<p>
-EC private key (hex): <input type="text" name="prvkey1" value="" size="100"/><br/>
-EC public key (hex): <input type="text" name="pubkey1" value="" size="100"/><br/>
-</p>
+            var sig = new KJUR.crypto.Signature({"alg": _algoritmoAssina, "prov": "cryptojs/jsrsa"});
+            sig.initSign({'ecprvhex': _chavePrivada, 'eccurvename': _curva});
 
-<h4>Segundo passo: Assinando uma mensagem!</h4>
-Algoritmo de assinatura: 
-<select name="sigalg1">
-<option value="SHA256withECDSA">SHA256withECDSA
-<option value="SHA1withECDSA">SHA1withECDSA
-</select><br/>
+            sig.updateHex(_strHex);
+            var assinatura = sig.sign();
 
-Message string to be signed:
-    <input type="file" onchange="file2hex(this.files[0])"/>
-<!--<input type="text" name="msg1" value="aaa" size="100"/><br/>-->
-<input type="button" value="Assinar mensagem" onClick="doSign();"/><br/>
-<p>
-Signature value (hex): <input type="text" name="sigval1" value="" size="100"/><br/>
-</p>
+            document.getElementById("arqAss").value = assinatura;
 
-<h4>Terceiro passo: Verificando a assinatura!</h4>
-<input type="button" value="Verifique!" onClick="doVerify();"/>
-<input type="reset" value="Reinicie"/>
+        }
 
-</form>
 
-<!-- now editing -->
 
-      </section>
-    </div>
+        function verificador() {
+            var f1 = document.form1;
+            var chavePublica = f1.chavePublica1.value;
+            var curve = f1.curve1.value;
+            var sigalg = f1.sigalg1.value;
+            var msg1 = f1.msg1.value;
+            var sigval = f1.sigval1.value;
 
-  </body>
+            var sig = new KJUR.crypto.Signature({"alg": sigalg, "prov": "cryptojs/jsrsa"});
+            sig.initVerifyByPublicKey({'ecpubhex': chavePublica, 'eccurvename': curve});
+            sig.updateString(msg1);
+            var resultado = sig.verify(sigval);
+            if (resultado) {
+                alert("Assinatura ECDSA válida! ;)");
+            } else {
+                alert("Assinatura ECDSA inválida! ;p");
+            }
+        }
+
+        function verificadordeAssinatura() {
+
+            var assinatura = document.getElementById("arqAss").value;
+
+            var sig = new KJUR.crypto.Signature({"alg": _algoritmoAssina, "prov": "cryptojs/jsrsa"});
+            sig.initVerifyByPublicKey({'ecpubhex': _chavePublica, 'eccurvename': _curva});
+            sig.updateHex(_strHex);
+            var resultado = sig.verify(assinatura);
+            console.log(resultado);
+            console.log(sig);
+            if (resultado) {
+                alert("Assinatura ECDSA válida! ;)");
+            } else {
+                alert("Assinatura ECDSA inválida! ;p");
+            }
+        }
+
+        function file2hex(file) {
+            var reader = new FileReader();
+            reader.readAsArrayBuffer(file);
+            reader.onload = function(e) {
+                var buffer = reader.result;
+                var view = new DataView(buffer);
+                var magic = view.getUint8(0, false);
+                var numeroInteiro = new Int8Array(buffer);
+
+                var tam = numeroInteiro.length;
+                var saida = "";
+
+                for (var i = 0; i < tam; i++) {
+                    saida += numeroInteiro[i].toString(16);
+                }
+
+                _strHex = saida;
+            };
+        }
+
+        function ab2str(buf) {
+            return String.fromCharCode.apply(null, new Int8Array(buf));
+        }
+
+        function ba2hex(Int8Array) {
+
+            var tam = Int8Array.length;
+            var saida = "";
+
+            for (var i = 0; i < tam; i++) {
+                saida += Int8Array[i].toString(16);
+            }
+            return saida;
+        }
+
+        function file2ab(file) {
+            var reader = new FileReader();
+            reader.readAsArrayBuffer(file);
+            reader.onload = function(e) {
+                var buffer = reader.result;
+                var view = new DataView(buffer);
+                var magic = view.getUint8(0, false);
+                var numeroInteiro = new Int8Array(buffer);
+
+                return numeroInteiro;
+            };
+        }
+    </script>
+
+    <body>
+
+        <div id="pai">
+
+            <div id="resto">
+
+                <h1>Assinaturation</h1>
+                <ul>
+                    <li>Primeiro passo: Selecione seu arquivo</li>
+                    <li>Segundo passo: Clique em "Gera as Chaves"</li>
+                    <li>Terceiro passo: Clique em "Assina o arquivo"</li>
+                </ul>
+                <h3>Pronto,seu arquivo está assinado. </h3>
+                <h5>Caso queira verificar a autenticidade da assinatura clique em "Verifica a assinatura".</h5>
+
+                <textarea id="chavePublica" name="publicKey" rows="5" cols="65">
+
+                </textarea><br>
+
+                <textarea id="arqAss" name="arquivoAssinado" rows="5" cols="65">
+
+                </textarea><br>
+
+                <label><b>1° </b></label><input type="file" onchange="file2hex(this.files[0])"/><br>
+
+
+                <label><b>2° </b></label><button id="botaoGeraChaves" onclick="gerador()" type="button" >Gera as chaves</button><br>
+                <label><b>3° </b></label><button id="botaoAssina" onclick="assinador()" type="button" >Assina o arquivo</button><br>
+                <label><b>4° </b></label><button id="botaoVerifica" onclick="verificadordeAssinatura()" type="button" >Verifica a assinatura</button><br>
+
+
+
+                <select id="valorCurva" name="curva">
+                    <option value="secp256r1">secp256r1 (= NIST P-256, P-256, prime256v1)
+                </select>
+
+                <select id="algoritmoAssina" name="algoritmoAssinatura">
+                    <option value="SHA256withECDSA">SHA256withECDSA
+                    <option value="SHA1withECDSA">SHA1withECDSA
+                </select>
+
+            </div>
+
+        </div>
+
+
+
+
+    </body>
+
 </html>
