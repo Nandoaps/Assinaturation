@@ -54,18 +54,72 @@ function doGenerate() {
 }
 
 function doSign() {
-  var f1 = document.form1;
+    var f1 = document.form1;
   var prvkey = f1.prvkey1.value;
   var curve = f1.curve1.value;
   var sigalg = f1.sigalg1.value;
-  var msg1 = f1.msg1.value;
+  var saida = f1.saida.value;
 
   var sig = new KJUR.crypto.Signature({"alg": sigalg, "prov": "cryptojs/jsrsa"});
   sig.initSign({'ecprvhex': prvkey, 'eccurvename': curve});
-  sig.updateString(msg1);
+  sig.updateString(saida);
   var sigValueHex = sig.sign();
   
   f1.sigval1.value = sigValueHex;
+    
+    function ba2hex(Int8Array){
+    	
+    	var tam = Int8Array.length;
+        var saida = "";
+        
+        for(var i=0; i<tam; i++){
+        saida += Int8Array[i].toString(16);
+      }
+    	return saida;
+    }
+
+    function ab2str(buf) {
+       return String.fromCharCode.apply(null, new Int8Array(buf));
+     }
+ 
+function file2ab(file) {
+          
+    var reader = new FileReader();    
+    reader.readAsArrayBuffer(file);   
+    reader.onload = function(e) {
+        var buffer = reader.result;           
+        var view = new DataView(buffer);    
+        var magic = view.getUint8(0, false); 
+        var numint = new Int8Array(buffer);
+        
+        return numint;
+
+    };
+}
+
+
+function file2hex(file) {
+           
+    var reader = new FileReader();     
+    reader.readAsArrayBuffer(file);   
+    reader.onload = function(e) {
+        var buffer = reader.result;           
+        var view = new DataView(buffer);      
+        var magic = view.getUint8(0, false); 
+        var numint = new Int8Array(buffer);
+        
+        var tam = numint.length;
+        var saida = "";
+        
+        for(var i=0; i<tam; i++){
+        saida += numint[i].toString(16);
+      }
+      document.getElementById("arqab").value = saida;
+      
+
+    };
+}
+  
 }
 
 function doVerify() {
@@ -117,8 +171,9 @@ Algoritmo de assinatura:
 <option value="SHA1withECDSA">SHA1withECDSA
 </select><br/>
 
-Message string to be signed: 
-<input type="text" name="msg1" value="aaa" size="100"/><br/>
+Message string to be signed:
+    <input type="file" onchange="file2hex(this.files[0])"/>
+<!--<input type="text" name="msg1" value="aaa" size="100"/><br/>-->
 <input type="button" value="Assinar mensagem" onClick="doSign();"/><br/>
 <p>
 Signature value (hex): <input type="text" name="sigval1" value="" size="100"/><br/>
